@@ -3,9 +3,19 @@ title: "R Notebook"
 output: html_notebook
 ---
 
-## missions
+# missions
 
-Change host_is_superhost to boolian Dealing with nans in the future' no reviews counts as none
+## 1 Cleaning the data
+
+1.  Change host_is_superhost to boolian rename to superhost
+
+2.  Dealing with nans in the future. no reviews counts as N/A
+
+3.   **important** we don't see n.a in character vars because they are written "N/A"
+
+4.  Change host_response_time to ordered categorical (or add a column that represents with numbers the categorical)
+
+5.  graphing for one regular
 
 ```{r}
 ```

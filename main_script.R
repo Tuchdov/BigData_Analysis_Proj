@@ -3,6 +3,7 @@ library(data.table)
 library(visdat)
 library(naniar)
 library(lubridate)
+library(scales)
 
 url_listings = "https://raw.githubusercontent.com/ophirbetser/EinBDW_github/master/datasets/listings_clean.csv"
 url_calendar = "https://raw.githubusercontent.com/ophirbetser/EinBDW_github/master/datasets/calendar_clean.csv"
@@ -48,6 +49,9 @@ listings <-
   ) %>% 
   rename(superhost = host_is_superhost)
 
+
+
+
 # I want to check if there is a seasonality for people joining airbnb
 # need to under stand how to make the bars faster, and explain that each bar is a uear
 ggplot(listings, mapping = aes(x = myr_listed))+
@@ -55,4 +59,40 @@ ggplot(listings, mapping = aes(x = myr_listed))+
   facet_grid(cols = vars(month_listed))
  
 
+ggplot(listings, mapping= aes(x = superhost, fill = superhost))+
+  geom_bar(aes(y = (..count..)/sum(..count..))) + 
+  scale_y_continuous(labels=percent)+
+  labs(title = "Distribution of superhosts and hosts")+
+  # put title in the middle
+  theme(plot.title = element_text(hjust = 0.5))+
+  xlab(label = "Is superhost? ")+
+  ylab(label = "")
 
+rpm_avg = mean(listings$reviews_per_month, na.rm = T)
+text <- as.character(round(rpm_avg, 3))
+
+ggplot(listings, mapping = aes(x = reviews_per_month))+
+  geom_histogram()+
+  stat_bin(binwidth = 1)+
+  geom_vline(xintercept = rpm_avg, linetype="dotted")+
+  annotate("text",x = rpm_avg,y = 20, label = text)+
+  xlab(label = "Reviews per month")+
+  ylab(label = "n")
+
+# Where are the super hosts?
+ggplot(listings, aes( x =superhost )) +
+  geom_bar(aes(fill = factor(superhost)))+
+  facet_wrap(vars(neighbourhood))
+  
+
+sdasd
+ggplot(listings, aes( y =price_dollars, x = review_scores_rating )) +
+     geom_point(aes(colour = factor(superhost)))+
+     facet_wrap(vars(neighbourhood))+
+     ylim(c(0,1000))
+vis_dat(listings)
+# percentege of superhost
+
+
+
+perc_host

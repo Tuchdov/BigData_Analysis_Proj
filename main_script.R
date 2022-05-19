@@ -93,6 +93,11 @@ ggplot(listings, aes( y =price_dollars, x = review_scores_rating )) +
 vis_dat(listings)
 # percentege of superhost
 
+#what kind of properties are most visited?
+ggplot(listings, aes( x =review_scores_rating , y = price_dollars , fill = property_type))+
+ geom_area()+
+  ylim(c(0,1000))
+
 
 
 perc_host

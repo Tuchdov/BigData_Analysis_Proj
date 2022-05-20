@@ -14,13 +14,7 @@ calendar_clean = fread(url_calendar)
 vis_dat(listings_clean)
 vis_miss(listings_clean)
 
-# 
-# listings_clean %>%  
-#   count(host_is_superhost)
-# 
-# 
-# listings_clean %>% 
-#   count(neighbourhood)
+
 
 # categorizing charecter vars
 response_lvls = 
@@ -68,7 +62,6 @@ ggplot(listings, mapping= aes(x = superhost, fill = superhost))+
   xlab(label = "Is superhost? ")+
   ylab(label = "")
 
-rpm_avg = mean(listings$reviews_per_month, na.rm = T)
 text <- as.character(round(rpm_avg, 3))
 
 ggplot(listings, mapping = aes(x = reviews_per_month))+
@@ -85,7 +78,7 @@ ggplot(listings, aes( x =superhost )) +
   facet_wrap(vars(neighbourhood))
   
 
-sdasd
+
 ggplot(listings, aes( y =price_dollars, x = review_scores_rating )) +
      geom_point(aes(colour = factor(superhost)))+
      facet_wrap(vars(neighbourhood))+
@@ -94,10 +87,36 @@ vis_dat(listings)
 # percentege of superhost
 
 #what kind of properties are most visited?
-ggplot(listings, aes( x =review_scores_rating , y = price_dollars , fill = property_type))+
- geom_area()+
-  ylim(c(0,1000))
+
+mu <- plyr::ddply(listings, "property_type", summarise, grp.mean=mean(reviews_per_month, na.rm = T))
+# keeping props larger then 10
+props_good <- listings %>%
+  group_by(property_type) %>% 
+  select(property_type)%>% 
+  count() %>% 
+  filter(n > 5) %>% 
+  pull(property_type)
 
 
+mu_tot <- listings %>%
+  select(property_type, reviews_per_month)%>% 
+  summarise(mu_tot = mean(reviews_per_month, na.rm = T)) %>%
+  pull()
 
-perc_host
+
+# Plot
+theme_set(theme_classic())
+ ggplot(listings %>% 
+          filter(property_type %in% props_good), aes(reviews_per_month))+
+ geom_density(aes(fill=factor(property_type)), alpha=0.8)+
+   facet_wrap(vars(property_type))+
+   geom_vline(data=mu %>% 
+                filter(property_type %in% props_good), aes(xintercept=grp.mean, color=property_type),
+              linetype="dashed" ,show.legend = F , size = 1.5)+
+   geom_vline(aes(xintercept = mu_tot), linetype = "dashed", show.legend = F)+
+  labs(title="What kind of properties are most visited?", 
+       subtitle="Monthly reviews grouped by property type",
+       caption=c("black verical line = total avg monthly review", "color dashed line = avg month review by group"),
+       x="Monthly Reviews",
+       fill="Property Type")+
+ theme(plot.caption = element_text(hjust=c(1, 0.8)))

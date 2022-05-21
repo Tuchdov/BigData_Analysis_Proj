@@ -4,6 +4,7 @@ library(visdat)
 library(naniar)
 library(lubridate)
 library(scales)
+library(patchwork)
 
 url_listings = "https://raw.githubusercontent.com/ophirbetser/EinBDW_github/master/datasets/listings_clean.csv"
 url_calendar = "https://raw.githubusercontent.com/ophirbetser/EinBDW_github/master/datasets/calendar_clean.csv"
@@ -169,3 +170,45 @@ theme_set(theme_classic())
  g3 <- ggplot(data = res, aes(x = Group.1, y = x, group=1)) + 
    xlab("Month") + ylab("Median Price") + geom_line()
  g3
+
+# part 3
+
+full_data <-  calendar_clean %>% 
+   rename(id = listing_id ) %>% 
+   left_join(listings, by = "id")
+ 
+
+glimpse(full_data)
+
+full_data %>% 
+  group_by(date) %>% 
+  summarise(prop_full = mean(available_category)) %>% 
+  ggplot(aes(x = date, y = prop_full))+
+  geom_line()+
+  labs(x = "Date", y = "p", title = "proportion of booked places",
+       captions = "1 = fully booked, 0 = fully available")
+
+
+
+p3_half_yr = full_data %>% 
+  group_by(date) %>% 
+  summarise(prop_full = mean(available_category)) %>% 
+  filter(date > "2017-03-10" ) %>% 
+  ggplot(aes(x = date, y = prop_full))+
+  geom_line()+
+  labs(x = "Date", y = "p", title = "proportion of booked places",
+       )
+  
+
+p3_2weeks = full_data %>% 
+  group_by(date) %>% 
+  summarise(prop_full = mean(available_category)) %>% 
+  filter(date > "2017-04-10" & date <"2017-04-22") %>% 
+  ggplot(aes(x = date, y = prop_full))+
+  geom_line()+
+  labs(x = "Date", y = "p", title = "proportion of booked places",
+       captions = "1 = fully booked, 0 = fully available")
+
+
+p3_half_yr + p3_2weeks
+

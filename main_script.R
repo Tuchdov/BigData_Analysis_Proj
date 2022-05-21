@@ -120,3 +120,52 @@ theme_set(theme_classic())
        x="Monthly Reviews",
        fill="Property Type")+
  theme(plot.caption = element_text(hjust=c(1, 0.8)))
+ 
+ 
+ tab <- table(as.Date(cut(listings_clean$host_since, 'month')))
+ 
+ first_metric <- data.frame(Date=as.Date(names(tab)),
+                            Frequency=as.vector(tab))
+ first_metric$Date <- as.Date(first_metric$Date, format="%m-%Y")
+ 
+ first_metric$MonthN <- as.numeric(format(as.Date(first_metric$Date),"%m")) # Month's number
+ 
+ first_metric$year <- as.numeric(format(as.Date(first_metric$Date),"%y"))
+ for(row in 2:nrow(first_metric)){
+   first_metric[row, 2] <- first_metric[row, 2] + first_metric[row-1, 2]
+ }
+ 
+ length(factor(first_metric$MonthN))
+ g <- ggplot(data = first_metric, aes(x = MonthN, y = Frequency, group = year, colour=factor(year))) + 
+   ylab("Hosts") + labs(colour = "Year") +
+   geom_line() + geom_point() +
+   scale_color_brewer(palette = "Set1") + 
+   scale_x_continuous(name="Month", breaks=1:12)
+ g
+ 
+ #by_neighbourhood <- group_by(listings_clean, neighbourhood)
+ second_metric <- group_by(listings_clean, neighbourhood)
+ second_metric$Month <- format(as.Date(second_metric$host_since), "%m")
+ second_metric$Year <- format(as.Date(second_metric$host_since), "%Y")
+ second_metric$neighbourhood_Year <- paste(second_metric$neighbourhood, second_metric$Year, sep="#")
+ result <- data.frame(table(second_metric$neighbourhood_Year))
+ result$Var1 <- as.character(result$Var1)
+ result$Year <- sapply(strsplit(result$Var1, "#"), "[[", 2)
+ result$neighbourhood <- sapply(strsplit(result$Var1, "#"), "[[", 1)
+ for(row in 2:nrow(result)){
+   if(result[row,4] == result[row-1,4]){
+     result[row, 2] <- result[row, 2] + result[row-1, 2]
+   }
+ }
+ g2 <- ggplot(data = result, aes(x = Year, y = Freq, group = neighbourhood, colour=factor(neighbourhood))) + 
+   ylab("Hosts") + 
+   geom_line() + geom_point()
+ g2
+ 
+ third_metric <- calendar_clean
+ third_metric$Month_Yr <- format(as.Date(third_metric$date), "%Y-%m")
+ third_metric$price_dollars <- parse_number(third_metric$price_dollars)
+ res <- aggregate(third_metric$price_dollars, list(third_metric$Month_Yr), FUN=median, na.rm = TRUE)
+ g3 <- ggplot(data = res, aes(x = Group.1, y = x, group=1)) + 
+   xlab("Month") + ylab("Median Price") + geom_line()
+ g3
